@@ -64,6 +64,7 @@ do_reset_timer()
 
     Requires setDvar("scr_sd_timelimit", 2.5); to be set @ spawn!
     Call it as thread do_reset_timer(); on init!
+    Also call: level.pers["timer_reset"] = true;
 */
 
 /* Smooth Anim Bind */
