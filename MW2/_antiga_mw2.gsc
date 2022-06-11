@@ -92,6 +92,7 @@ smooth_anim_bind()
         if(self getCurrentWeapon() == self.primaryWeapon)
         {
             setDvar("cg_nopredict", 1);
+            waitframe();
             self switchToWeapon(self.secondaryWeapon);
             waitframe();
             self switchToWeapon(self.primaryWeapon);
@@ -101,6 +102,7 @@ smooth_anim_bind()
         else
         {
             setDvar("cg_nopredict", 1);
+            waitframe();
             self switchToWeapon(self.primaryWeapon);
             waitframe();
             self switchToWeapon(self.secondaryWeapon);
