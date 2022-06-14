@@ -23,7 +23,6 @@ gsc_shax(gun, reloadtime, show, take)
 }
 
 /*
-
     Usage:
 
     gun = shax gun of preference.
@@ -33,11 +32,11 @@ gsc_shax(gun, reloadtime, show, take)
 
     Example:
     thread gsc_shax("ump45_mp", .32, .64, .15);
-
-
 */
 
-/* Round Timer Reset */
+/* 
+    Round Timer Reset 
+*/
 
 do_reset_timer()
 {
@@ -67,7 +66,9 @@ do_reset_timer()
     Also call: level.pers["timer_reset"] = true;
 */
 
-/* Smooth Anim Bind */
+/* 
+    Smooth Anim Bind 
+*/
 
 smooth_anim_toggle()
 {
@@ -112,7 +113,9 @@ smooth_anim_bind()
     }
 }
 
-/* Shotgun Jumps */
+/* 
+    Shotgun Jumps 
+*/
 
 shotgun_jump_toggle()
 {
@@ -226,6 +229,7 @@ set_weapon_camo(ca1, ca2)
         - One force setting spawn weapon (can't shoot).
         - 2nd one is an genuine mala (can shoot).
 */
+
 force_mala_mw2_toggle()
 {
     if(!self.mw2_toggle)
