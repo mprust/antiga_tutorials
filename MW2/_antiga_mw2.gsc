@@ -1,5 +1,14 @@
 /* 
-    GSC SHAX 
+    GSC SHAX
+    Usage:
+
+    gun = shax gun of preference.
+    reloadtime = speed of reload time.
+    show = time it takes to show the shax gun.
+    take = time it takes to take the shax gun.
+
+    Example:
+    thread gsc_shax("ump45_mp", .32, .64, .15);
 */
 
 gsc_shax(gun, reloadtime, show, take)
@@ -23,18 +32,6 @@ gsc_shax(gun, reloadtime, show, take)
     wait take;
     self takeWeapon(gun);
 }
-
-/*
-    Usage:
-
-    gun = shax gun of preference.
-    reloadtime = speed of reload time.
-    show = time it takes to show the shax gun.
-    take = time it takes to take the shax gun.
-
-    Example:
-    thread gsc_shax("ump45_mp", .32, .64, .15);
-*/
 
 /* 
     Round Timer Reset 
