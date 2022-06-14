@@ -1,4 +1,6 @@
-/* GSC SHAX */
+/* 
+    GSC SHAX 
+*/
 
 gsc_shax(gun, reloadtime, show, take)
 {
