@@ -6,13 +6,24 @@
     reloadtime = speed of reload time.
     show = time it takes to show the shax gun.
     take = time it takes to take the shax gun.
+    
+    exagerate_shax = toggle smooth slowdown of shax anim.
 
     Example:
     thread gsc_shax("ump45_mp", .32, .64, .15);
 */
 
+exagerate_shax()
+{
+    if(!self.pers["exag_shax"])
+        self.pers["exag_shax"] = true;
+    else
+        self.pers["exag_shax"] = false;
+}
+
 gsc_shax(gun, reloadtime, show, take)
 {
+    old_timescale = getDvarFloat("timescale");
     self giveWeapon(gun);
     self switchToWeapon(gun);
     self setSpawnWeapon(gun);
@@ -25,12 +36,20 @@ gsc_shax(gun, reloadtime, show, take)
     wait 0.01;
     self setWeaponAmmoClip(gun, old_clip);
     wait show;
+    if(self.pers["exag_shax"])
+    {
+        setDvar("timescale", 0.25);
+    }
     self setSpawnWeapon(gun);
     self setClientDvar("perk_weapReloadMultiplier", 0.5);
     setDvar("cg_drawgun", 1);
     setDvar("cg_drawCrosshair", 1);
     wait take;
     self takeWeapon(gun);
+    if(self.pers["exag_shax"])
+    {
+        setDvar("timescale", old_timescale);
+    }
 }
 
 /* 
@@ -421,4 +440,216 @@ monitor_canswaps()
         }
         waitframe();
     }
+}
+
+/*
+    Drop Weapon + Delete Weapon on Command
+
+    Parse: 
+        - player.pers["drop_toggle"] = false; via PlayerConnect
+        - player.pers["delete_dropped"] = false; via PlayerConnect
+
+    drop_weapon_toggle = the toggle to enable/disable the drop weapon command.
+    delete_weapons_toggle = the toggle to enable/disable the deletion of weapons on the ground.
+*/
+
+drop_weapon_toggle()
+{
+    if(!self.pers["drop_toggle"])
+    {
+        self.pers["drop_toggle"] = true;
+        self thread drop_weapon();
+    } else {
+        self.pers["drop_toggle"] = false;
+        self notify("stop_drop_toggle");
+    }
+}
+
+drop_weapon()
+{
+    self endon("disconnect");
+    self endon("stop_drop_toggle");
+    for(;;)
+    {
+        self notifyOnPlayerCommand("drop", "+drop"); //Change this to whatever you want.
+        self waittill("drop");
+        self.pers["item_ground"] = self dropItem(self getCurrentWeapon());
+        waitframe();
+    }   
+}
+
+delete_weapons_toggle()
+{
+    if(!self.pers["delete_dropped"])
+    {
+        self.pers["delete_dropped"] = true;
+        self thread delete_weapons_off_floor();
+    } else {
+        self.pers["delete_dropped"] = false;
+        self notify("stop_delete_toggle");
+    }    
+}
+
+delete_weapons_off_floor()
+{
+    self endon("disconnect");
+    self endon("stop_delete_toggle");
+    for(;;)
+    {
+        self notifyOnPlayerCommand("dg", "+dg"); //Change this to whatever you want.
+        self waittill("dg");
+        self.pers["item_ground"] delete();
+        waitframe();
+    }
+}
+
+/*
+    Use Bar Command with Delete Option Command
+
+    Parse:
+        - player.pers["bar_cmd"] = false; via PlayerConnect
+        - player.pers["delete_bar"] = false; via PlayerConnect
+    
+    do_bar_cmd = the toggle to enable/disable the custom bar command.
+    destroy_all_cmd = the toggle to enable/disable the delete custom bar command.
+*/
+
+do_bar_cmd()
+{
+    if(!self.pers["bar_cmd"])
+    {
+        self.pers["bar_cmd"] = true;
+        self thread do_custom_bar_cmd();
+    } else {
+        self.pers["bar_cmd"] = false;
+        self notify("stop_bar_cmd");
+    }    
+}
+
+do_custom_bar_cmd()
+{
+    self endon("disconnect");
+    self endon("stop_bar_cmd");
+    for(;;)
+    {
+        self notifyOnPlayerCommand("ba", "+ba"); //Change this to whatever you want.
+        self waittill("ba");
+        self thread custom_bar(5);
+        waitframe();
+    }
+}
+
+custom_bar( duration )
+{
+	self endon( "disconnect" );
+	
+	self.pers["useBar"] = createPrimaryProgressBar( 0 ); //Change this to whatever you want.
+	self.pers["useBarText"] = createPrimaryProgressBarText( 0 ); //Change this to whatever you want.
+	self.pers["useBarText"] setText( "^:Antiga Tutorials.." ); //Change this to whatever you want.
+
+	self.pers["useBar"] updateBar( 0, 1 / duration );
+	for ( waitedTime = 0; waitedTime < duration && isAlive( self ) && !level.gameEnded; waitedTime += 0.05 )
+		wait ( 0.05 );
+	
+	self.pers["useBar"] destroyElem();
+	self.pers["useBarText"] destroyElem();
+}
+
+destroy_all_cmd()
+{
+    if(!self.pers["delete_bar"])
+    {
+        self.pers["delete_bar"] = true;
+        self thread destroy_all_bars();
+    } else {
+        self.pers["delete_bar"] = false;
+        self notify("stop_del_bar");
+    }    
+}
+
+destroy_all_bars()
+{
+    self endon("disconnect");
+    self endon("stop_del_bar");
+    for(;;)
+    {
+        self notifyOnPlayerCommand("db", "+db"); //Change this to whatever you want.
+        self waittill("db");
+        self.pers["useBar"] destroyElem();
+        self.pers["useBarText"] destroyElem();
+        waitframe();
+    }
+}
+
+/*
+    Enables Canzoom + OMA Shax
+        - Included a DVAR to allow editing on OMA Timer.
+    
+    Parse:
+        - player.pers["oma_modified"] = false; via PlayerConnect
+        - setDvarIfUninitialized("oma_overwrite", "Whatever You Want!");
+        
+    oma_shax_or_zoom = the toggle to enable/disable the ability to canzoom/oma shax.
+    giveOneManArmyClass = replace this function in _perkFunctions in order to utilize what is below.
+*/
+
+oma_shax_or_zoom()
+{
+    if(!self.pers["oma_modified"])
+        self.pers["oma_modified"] = true;
+    else
+        self.pers["oma_modified"] = false;
+}
+
+giveOneManArmyClass( className )
+{
+	self endon ( "death" );
+	self endon ( "disconnect" );
+	level endon ( "game_ended" );
+
+	if ( self _hasPerk( "specialty_omaquickchange" ) )
+	{
+		changeDuration = 3.0;
+		self playLocalSound( "foly_onemanarmy_bag3_plr" );
+		self playSoundToTeam( "foly_onemanarmy_bag3_npc", "allies", self );
+		self playSoundToTeam( "foly_onemanarmy_bag3_npc", "axis", self );
+	}
+	else
+	{
+		changeDuration = 6.0;
+		self playLocalSound( "foly_onemanarmy_bag6_plr" );
+		self playSoundToTeam( "foly_onemanarmy_bag6_npc", "allies", self );
+		self playSoundToTeam( "foly_onemanarmy_bag6_npc", "axis", self );
+	}
+		
+	self thread omaUseBar( getDvarInt("oma_overwrite") );
+
+	if(!self.pers["oma_modified"])
+	{
+		self _disableWeapon();
+		self _disableOffhandWeapons();
+		wait ( getDvarInt("oma_overwrite") );
+		self _enableWeapon();
+		self _enableOffhandWeapons();
+		self maps\mp\gametypes\_class::giveLoadout( self.pers["team"], className, false );
+	} else {
+		old_weapon = self getCurrentWeapon();
+		waitframe();
+		self takeWeapon(old_weapon);
+		self _disableOffhandWeapons();
+		wait ( getDvarInt("oma_overwrite") );
+		self giveWeapon(old_weapon);
+		self setSpawnWeapon(old_weapon);
+		self _enableOffhandWeapons();		
+	}
+
+	self.OMAClassChanged = true;
+	
+	// handle the fact that detachAll in giveLoadout removed the CTF flag from our back
+	// it would probably be better to handle this in _detachAll itself, but this is a safety fix
+	if ( isDefined( self.carryFlag ) )
+		self attach( self.carryFlag, "J_spine4", true );
+	
+	self notify ( "changed_kit" );
+	level notify ( "changed_kit" );
 }
